@@ -1,0 +1,43 @@
+version: '3.9'
+
+networks:
+  test-backend:
+
+volumes:
+  test_pg_data:
+
+services:
+  nginx:
+    container_name: "test-back-nginx"
+    build:
+      context: ./nginx
+    volumes:
+      - ../..:/var/www
+      - ./nginx/certs:/etc/nginx/certs
+    depends_on:
+      - php
+    ports:
+      - "4443:443"
+    networks:
+      - test-backend
+  php:
+    build:
+      context: ./php
+    container_name: 'test-back-php'
+    volumes:
+      - ../..:/var/www
+    networks:
+      - test-backend
+  db:
+    image: postgres:13.4
+    container_name: 'test-back-pg'
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: "${PG_USER}"
+      POSTGRES_PASSWORD: "${PG_PWD}"
+      POSTGRES_DB: "${PG_DB}"
+    volumes:
+      - test_pg_data:/var/lib/postgresql/data
+    networks:
+      - test-backend
